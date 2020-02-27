@@ -4,17 +4,16 @@
 
 
 $PortalWebService = $props["PortalWebService"]
-$PortalUser=$props["PortalUser"]
-$PortalPass=$props["PortalPass"] | ConvertTo-SecureString -asPlainText -Force
-$PortalTenant=$props["PortalTenant"]
-$PortalAppInstance=$props["PortalAppInstance"]
+$PortalUser = $props["PortalUser"]
+$PortalPass = $props["PortalPass"] | ConvertTo-SecureString -AsPlainText -Force
+$PortalTenant = $props["PortalTenant"]
+$PortalAppInstance = $props["PortalAppInstance"]
 
-$cred = New-Object System.Management.Automation.PSCredential($PortalUser,$PortalPass)
+$cred = New-Object System.Management.Automation.PSCredential ($PortalUser,$PortalPass)
 
-
-function addModifyOdpUser{
-  param($uidemail, $fname, $lname, $jobtitle)
-  $Body = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:http.service.odp.ondemand.ca.com" xmlns:odum="http://odum.service.odp.ondemand.ca.com">
+function createBody {
+  param($uidemail,$fname,$lname,$jobtitle)
+  $strBody = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:http.service.odp.ondemand.ca.com" xmlns:odum="http://odum.service.odp.ondemand.ca.com">
    <soapenv:Header/>
    <soapenv:Body>
       <urn:addModifyUserRequest>
@@ -35,13 +34,25 @@ function addModifyOdpUser{
       </urn:addModifyUserRequest>
    </soapenv:Body>
 </soapenv:Envelope>'
+  return $strBody
+}
+
+function addModifyOdpUser {
+  param($uidemail,$fname,$lname,$jobtitle)
+  $Body = createBody $uidemail $fname $lname $jobtitle
 
   $portalrequest = Invoke-WebRequest -Uri $PortalWebService -Headers (@{ SOAPAction = 'Read' }) -Method Post -Body $Body -ContentType text/xml -Credential $cred
 
   if ($portalrequest.StatusCode -eq "200") {
-  return $portalrequest
+    return $portalrequest
   }
   else {
-  return "There was an error." + $portalrequest.StatusCode + ' was returned.'
+    return "There was an error." + $portalrequest.StatusCode + ' was returned.'
   }
+}
+
+function printBody {
+  param($uidemail,$fname,$lname,$jobtitle)
+  $Body = createBody $uidemail $fname $lname $jobtitle
+  return $Body
 }
