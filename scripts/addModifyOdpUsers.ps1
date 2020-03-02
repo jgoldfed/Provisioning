@@ -12,7 +12,7 @@ $PortalAppInstance = $props["PortalAppInstance"]
 $cred = New-Object System.Management.Automation.PSCredential ($PortalUser,$PortalPass)
 
 function createBody {
-  param($uidemail,$fname,$lname,$jobtitle)
+  param($uidemail,$fname,$lname,$jobtitle,$email,$phone)
   $strBody = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:http.service.odp.ondemand.ca.com" xmlns:odum="http://odum.service.odp.ondemand.ca.com">
    <soapenv:Header/>
    <soapenv:Body>
@@ -21,6 +21,13 @@ function createBody {
             <odum:emailAddress>' + $uidemail + '</odum:emailAddress>
             <odum:tenantName>' + $PortalTenant + '</odum:tenantName>
             <odum:active>true</odum:active>
+            <odum:additionalEmailAddresses>
+               <urn:item>
+                  <odum:emailAddress>' + $email +'</odum:emailAddress>
+                  <odum:emailAddressType>E-mail</odum:emailAddressType>
+                  <odum:primary>true</odum:primary>
+               </urn:item>
+            </odum:additionalEmailAddresses>
             <odum:appInstances>
             <item>' + $PortalAppInstance + '</item>
             </odum:appInstances>
@@ -29,6 +36,13 @@ function createBody {
             <odum:languageId>en_US</odum:languageId>
             <odum:lastName>' + $lname + '</odum:lastName>
             <odum:lockout>false</odum:lockout>
+            <odum:phones>
+               <urn:item>
+                  <odum:number>' + $phone + '</odum:number>
+                  <odum:phoneType>Business</odum:phoneType>
+                  <odum:primary>true</odum:primary>
+               </urn:item>
+            </odum:phones>
             <odum:timezone>UTC</odum:timezone>
          </odum:user>
       </urn:addModifyUserRequest>
@@ -38,8 +52,8 @@ function createBody {
 }
 
 function addModifyOdpUser {
-  param($uidemail,$fname,$lname,$jobtitle)
-  $Body = createBody $uidemail $fname $lname $jobtitle
+  param($uidemail,$fname,$lname,$jobtitle,$email,$phone)
+  $Body = createBody $uidemail $fname $lname $jobtitle $email $phone
 
   $portalrequest = Invoke-WebRequest -Uri $PortalWebService -Headers (@{ SOAPAction = 'Read' }) -Method Post -Body $Body -ContentType text/xml -Credential $cred
 
@@ -53,6 +67,6 @@ function addModifyOdpUser {
 
 function printBody {
   param($uidemail,$fname,$lname,$jobtitle)
-  $Body = createBody $uidemail $fname $lname $jobtitle
+  $Body = createBody $uidemail $fname $lname $jobtitle $email $phone
   return $Body
 }
